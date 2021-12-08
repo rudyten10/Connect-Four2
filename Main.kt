@@ -1,32 +1,15 @@
 package connectfour
 
-// stage 4/5
+// Stage 5/5
 fun main() {
     var rows = 0
     var cols = 0
-
-//    val col1 = mutableListOf<String>("1a", "2a", "3a", "4a", "5a", "6a")
-//    val col2 = MutableList(6) { "2" }
-//    val col3 = MutableList(6) { "3" }
-//    val col4 = MutableList(6) { "4" }
-//    val col5 = MutableList(6) { "5" }
-//    val col6 = MutableList(6) { "6" }
-//    val stateList = mutableListOf<MutableList<String>>(col1, col2, col3, col4, col5, col6 )
-//    println(stateList.reversed())
-//    println(stateList[0][0])
-//    println(stateList[0][1])
-//    println(stateList[0][2])
-//    println(stateList[0][3])
-//    println(stateList[1][0])
-    var cnt = 0
-
+    var currentGameCnt = 0
     var toggleTurn = 1
-
-    val validRegex = Regex("([0-9][0-9]?)x([0-9][0-9]?)")
-    val validRangeRegex = Regex("([5-9])x([5-9])")
-
-    //val validMoveRange = Regex("[1-5]")
     val validNumericRegex = Regex("[0-9]+")
+    var move = ""
+    var playerOneWonCnt = 0
+    var playerTwoWonCnt = 0
 
     println("Connect Four")
     println("First player's name:")
@@ -34,149 +17,150 @@ fun main() {
     println("Second player's name:")
     val sPlayerName = readLine()!!
 
-    // loop@ while (true) {
-    while (true) {
-        //println("+++++++++++")
-        println("Set the board dimensions (Rows x Columns)")
-        println("Press Enter for default (6 x 7)")
-        //val input = "5 X 6".trim().replace(" ", "").lowercase()
-        //var input = readLine()!!.trim().replace(" ", "").lowercase()
-        //var input = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
-        var input = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
+    val dim = setGameDimensions()
+    rows = dim[0]
+    cols = dim[1]
 
-        if (input == "") {
-            rows = 6
-            cols = 7
-            break
-        }
-
-        if (input.matches(validRegex)) {
-            val tmp = input.split("x")
-            rows = tmp[0].toString().toInt()
-            cols = tmp[1].toString().toInt()
-            if (input.matches(validRangeRegex)) {
-                break
-            } else {
-                if (rows < 5 ||rows > 9) {
-                    println("Board rows should be from 5 to 9")
-                } else if (cols < 5 || cols > 9) {
-                    println("Board columns should be from 5 to 9")
-                }
-                //continue@loop
-            }
-        } else {
-            //println("2222+++++++++++")
-            println("Invalid input")
-            //continue@loop
-        }
-    }
+    val numberOfGames = setGameNumber()
 
     println("$fPlayerName VS $sPlayerName")
     println("$rows X $cols board")
 
-    var move = ""
-
-    val stateList = MutableList(rows) { MutableList(cols) { 0 } }
-    displayGameBoard(rows, cols, stateList)
-
-    //cnt = 0
-    while (true) {
-        //if (cnt++ > 25) {
-        //    break
-        //}
+    if (numberOfGames == 1) {
+        println("Single game")
+    } else {
+        println("Total $numberOfGames games")
+        println("Game #${currentGameCnt+1}")
+    }
 
 
-        if (toggleTurn == 1) {
-            println("$fPlayerName's turn:")
+
+    var stateList = MutableList(rows) { MutableList(cols) { 0 } }
+
+
+    loopMain@ while (true) { ///// Game loop
+        if (currentGameCnt == numberOfGames){
+            break@loopMain
         } else {
-            println("$sPlayerName's turn:")
-        }
-
-        move = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
-
-        if (move == "end") {
-            println("Game over!")
-            break
-        }
-
-        if (!move.matches(validNumericRegex)) {
-            println("Incorrect column number")
-            continue
-        }
-
-        val colNo: Int = move.toInt()
-
-        //if (!move.matches(validMoveRange)) {
-        if (colNo == 0 || colNo > cols) {
-            println("The column number is out of range (1 - $cols)")
-            continue
-        }
-
-
-        //---validateColumnNo()
-        val tempCol = getColumn(colNo, stateList)
-
-        //println(tempCol)
-        if (!tempCol.contains(0)){
-            println("Column $colNo is full")
-            continue
-        }
-
-        //---validateInput()
-        //println(stateList)
-        makeMove(toggleTurn, colNo, stateList, tempCol)
-
-        val winner = analazeGameRows2(toggleTurn, stateList)
-        if (winner) {
+            if (numberOfGames > 1) {
+                stateList = MutableList(rows) { MutableList(cols) { 0 } }
+            }
             displayGameBoard(rows, cols, stateList)
+        }
+
+        while (true) {
             if (toggleTurn == 1) {
-                println("Player $fPlayerName won")
+                println("$fPlayerName's turn:")
             } else {
-                println("Player $sPlayerName won")
+                println("$sPlayerName's turn:")
             }
-            println("Game over!")
-            break
-        }
 
+            move = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
 
-
-        if (toggleTurn == 1) {
-            toggleTurn = 2
-        } else {
-            toggleTurn = 1
-        }
-
-
-        //println(stateList)
-        //stateList[3][4] = 1
-        //stateList[4][4] = 1
-
-        //println(tempCol)
-
-
-        updateGameState(stateList)
-        displayGameBoard(rows, cols, stateList)
-
-        var tieGame = true
-        for (i in stateList){
-            if (i.contains(0)){
-                tieGame = false
+            var exitCheck = gameRoundCheck(move)
+            if (exitCheck) {
+                break@loopMain
             }
-        }
 
-        if (tieGame) {
-            println("It is a draw")
-            println("Game over!")
-            //println(stateList)
-            break
-        }
+            if (!move.matches(validNumericRegex)) {
+                println("Incorrect column number")
+                continue
+            }
 
+            val colNo: Int = move.toInt()
+
+            if (colNo == 0 || colNo > cols) {
+                println("The column number is out of range (1 - $cols)")
+                continue
+            }
+
+            //---validateColumnNo()
+            val tempCol = getColumn(colNo, stateList)
+
+            if (!tempCol.contains(0)){
+                println("Column $colNo is full")
+                continue
+            }
+
+            //---validateInput()
+            makeMove(toggleTurn, colNo, stateList, tempCol)
+
+            val winner = analazeGameRows(toggleTurn, stateList)
+            val draw = analyzeGameDraw(toggleTurn, stateList)
+
+            if (winner || draw) {
+                displayGameBoard(rows, cols, stateList)
+
+                currentGameCnt++
+                if (winner) {
+                    if (toggleTurn == 1) {
+                        println("Player $fPlayerName won")
+                        playerOneWonCnt += 2
+                    } else {
+                        println("Player $sPlayerName won")
+                        playerTwoWonCnt += 2
+                    }
+                }
+
+                if (draw) {
+                    println("It is a draw")
+                    playerOneWonCnt++
+                    playerTwoWonCnt++
+                }
+
+                if (toggleTurn == 1) {
+                    toggleTurn = 2
+                } else {
+                    toggleTurn = 1
+                }
+
+                if (numberOfGames > 1) {
+                    println("Score")
+                    println("$fPlayerName: $playerOneWonCnt $sPlayerName: $playerTwoWonCnt")
+                    if (numberOfGames != currentGameCnt) {
+                        println("Game #${currentGameCnt + 1}")
+                    } else {
+                        println("Game over!") // 44444
+                    }
+
+                    break
+                } else {
+                    println("Game over!") //2222
+                    break@loopMain
+                }
+            }
+
+            if (toggleTurn == 1) {
+                toggleTurn = 2
+            } else {
+                toggleTurn = 1
+            }
+
+            displayGameBoard(rows, cols, stateList)
+        }
+    } ///// Game loop
+}
+
+
+fun analyzeGameDraw(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
+    var tieGame = true
+    for (i in stateList){
+        if (i.contains(0)){
+            tieGame = false
+        }
+    }
+    return tieGame
+}
+
+fun gameRoundCheck(move: String): Boolean {
+    if (move == "end") {
+        println("Game over!") // end
+        return true
+    } else {
+        return false
     }
 }
 
-fun updateGameState(stateList: MutableList<MutableList<Int>>) {
-    //println(stateList)
-}
 
 fun displayGameBoard(rows: Int, cols: Int, stateList: MutableList<MutableList<Int>>) {
     //var i = 0
@@ -246,11 +230,11 @@ fun makeMove(toggleTurn: Int, colNo: Int, stateList: MutableList<MutableList<Int
     }
 }
 
-fun analazeGameRows2(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
+fun analazeGameRows(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
 
     //check for 4 across
     for (row in stateList.indices) {
-        for (col in 0 until stateList[0].size - 4) {
+        for (col in 0 until stateList[0].size - 3) {
             if (stateList[row][col] == player &&
                 stateList[row][col + 1] == player &&
                 stateList[row][col + 2] == player &&
@@ -261,7 +245,7 @@ fun analazeGameRows2(player:Int, stateList: MutableList<MutableList<Int>>) :Bool
         }
     }
 
-//check for 4 up and down
+    //check for 4 up and down
     for (row in 0 until stateList.size - 3) { // - 4
         for (col in 0 until stateList[0].size) {
             if (stateList[row + 0][col] == player &&
@@ -272,11 +256,6 @@ fun analazeGameRows2(player:Int, stateList: MutableList<MutableList<Int>>) :Bool
             }
         }
     }
-
-
-
-
-
 
     //check upward diagonal
     for (row in 2 until stateList.size) {
@@ -304,118 +283,6 @@ fun analazeGameRows2(player:Int, stateList: MutableList<MutableList<Int>>) :Bool
 }
 
 
-fun analazeGameRows(player:String, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
-    //println(stateList)
-//    for (colIdx in stateList.indices) {
-//    }
-
-
-
-
-//    for (colIdx in stateList[0].indices) {
-//        var tmpArr = getDiagUpColumn(colIdx+1, stateList)
-//        var tmpStr = ""
-//        for (i in tmpArr) {
-//            tmpStr += i
-//        }
-//
-//        if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
-//            println("WINNER DIAG UP YAYYYYYYY")
-//            return true
-//            //break
-//        }
-//    }
-
-    //if (inDiag())
-
-
-    for (colIdx in stateList[0].indices) {
-        var tmpArr = getColumn(colIdx+1, stateList)
-        var tmpStr = ""
-        for (i in tmpArr) {
-            tmpStr += i
-        }
-
-        if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
-            //println("WINNER COLUMN YAYYYYYYY")
-            return true
-            //break
-        }
-    }
-
-
-    for (rowIdx in stateList.indices) {
-        var tmpArr = getRow(rowIdx, stateList)
-        var tmpStr = ""
-        for (i in tmpArr) {
-            tmpStr += i
-        }
-
-        if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
-            //println("WINNER ROW YAYYYYYYY")
-            return true
-            //break
-        }
-       // print("ppo")
-
-//        for (rowIdx in stateList.indices) {
-//            for (colIdx in stateList[rowIdx].indices) {
-//                if (stateList[rowIdx][colIdx])
-//            }
-//
-//        }
-
-        //if (tmpArr.contains())
-    }
-
-
-//    for (rowIdx in stateList.indices) {
-//        for (colIdx in stateList[rowIdx].indices) {
-//            //println("$rowIdx-$colIdx = ${stateList[rowIdx][colIdx]}")
-//            if (colIdx+4 > stateList[rowIdx].lastIndex+1){
-//                break
-//            }
-//            if (stateList[rowIdx][colIdx] > 0
-//                && stateList[rowIdx][colIdx] == stateList[rowIdx][colIdx+1]
-//                && stateList[rowIdx][colIdx] == stateList[rowIdx][colIdx+2]
-//                && stateList[rowIdx][colIdx] == stateList[rowIdx][colIdx+3]) {
-//                println("YAYYYYYYY")
-//                break
-//            }
-//        }
-//    }
-
-    return false
-}
-
-fun winnerCheck() {
-
-}
-
-fun inDiag(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
-    val tmpArr = MutableList<Int>(stateList.size) { 0 }
-
-    var xx = colNo
-
-    val rowSize = stateList.size
-    val colSize = stateList[0].size
-
-    for (k in 0..colSize + rowSize - 2) {
-        for (j in 0..k) {
-            val i = k - j
-            if (i < rowSize && j < colSize) {
-                print(stateList.get(i).get(j).toString())
-            }
-        }
-        println()
-    }
-
-    return tmpArr
-    //return mutableListOf(5,6,7,0,0)
-}
-
-
-
 
 fun getColumn(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
     val tmpArr = MutableList<Int>(stateList.size) { 0 }
@@ -425,15 +292,69 @@ fun getColumn(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableLis
     }
 
     return tmpArr
-    //return mutableListOf(5,6,7,0,0)
 }
 
-fun getRow(rowNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
-    //val tmpArr = MutableList<Int>(stateList.size) { 0 }
 
-    //stateList[rowNo]
+fun setGameNumber(): Int {
+    val validGameInputRangeRegex = Regex("[1-9]+")
 
-    return stateList[rowNo]
-    //return mutableListOf(5,6,7,0,0)
+    while (true) {
+        println("Do you want to play single or multiple games?")
+        println("For a single game, input 1 or press Enter")
+        println("Input a number of games:")
+        var input = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
+
+        if (input == ""){
+            //numberOfGames = 1
+            //break
+            return 1
+        }
+
+        if (input.matches(validGameInputRangeRegex)) {
+            return input.toInt()
+            //numberOfGames = input.toInt()
+            //break
+        } else {
+            println("Invalid input")
+        }
+    }
 }
 
+fun setGameDimensions(dftRows: Int = 6, dftCols: Int = 7): List<Int> {
+    val validRegex = Regex("([0-9][0-9]?)x([0-9][0-9]?)")
+    val validRangeRegex = Regex("([5-9])x([5-9])")
+
+    var rows = 0
+    var cols = 0
+
+    while (true) {
+        println("Set the board dimensions (Rows x Columns)")
+        println("Press Enter for default (6 x 7)")
+        var input = readLine()!!.trim().replace("\\s+".toRegex(), "").lowercase()
+
+        if (input == "") {
+            rows = dftRows
+            cols = dftCols
+            //break
+            return listOf<Int>(rows, cols)
+        }
+
+        if (input.matches(validRegex)) {
+            val tmp = input.split("x")
+            rows = tmp[0].toString().toInt()
+            cols = tmp[1].toString().toInt()
+            if (input.matches(validRangeRegex)) {
+                //break
+                return listOf<Int>(rows, cols)
+            } else {
+                if (rows < 5 || rows > 9) {
+                    println("Board rows should be from 5 to 9")
+                } else if (cols < 5 || cols > 9) {
+                    println("Board columns should be from 5 to 9")
+                }
+            }
+        } else {
+            println("Invalid input")
+        }
+    }
+}

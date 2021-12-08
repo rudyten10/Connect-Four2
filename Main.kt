@@ -1,6 +1,6 @@
 package connectfour
 
-// state 3/5
+// stage 4/5
 fun main() {
     var rows = 0
     var cols = 0
@@ -126,7 +126,19 @@ fun main() {
         //println(stateList)
         makeMove(toggleTurn, colNo, stateList, tempCol)
 
-        analazeGameRows(stateList)
+        val winner = analazeGameRows2(toggleTurn, stateList)
+        if (winner) {
+            displayGameBoard(rows, cols, stateList)
+            if (toggleTurn == 1) {
+                println("Player $fPlayerName won")
+            } else {
+                println("Player $sPlayerName won")
+            }
+            println("Game over!")
+            break
+        }
+
+
 
         if (toggleTurn == 1) {
             toggleTurn = 2
@@ -144,6 +156,20 @@ fun main() {
 
         updateGameState(stateList)
         displayGameBoard(rows, cols, stateList)
+
+        var tieGame = true
+        for (i in stateList){
+            if (i.contains(0)){
+                tieGame = false
+            }
+        }
+
+        if (tieGame) {
+            println("It is a draw")
+            println("Game over!")
+            //println(stateList)
+            break
+        }
 
     }
 }
@@ -220,10 +246,87 @@ fun makeMove(toggleTurn: Int, colNo: Int, stateList: MutableList<MutableList<Int
     }
 }
 
-fun analazeGameRows(stateList: MutableList<MutableList<Int>>)  { //: MutableList<Int>
+fun analazeGameRows2(player:Int, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
+
+    //check for 4 across
+    for (row in stateList.indices) {
+        for (col in 0 until stateList[0].size - 4) {
+            if (stateList[row][col] == player &&
+                stateList[row][col + 1] == player &&
+                stateList[row][col + 2] == player &&
+                stateList[row][col + 3] == player
+            ) {
+                return true
+            }
+        }
+    }
+
+//check for 4 up and down
+    for (row in 0 until stateList.size - 3) { // - 4
+        for (col in 0 until stateList[0].size) {
+            if (stateList[row + 0][col] == player &&
+                stateList[row + 1][col] == player &&
+                stateList[row + 2][col] == player &&
+                stateList[row + 3][col] == player) {
+                return true
+            }
+        }
+    }
+
+
+
+
+
+
+    //check upward diagonal
+    for (row in 2 until stateList.size) {
+        for (col in 0 until stateList[0].size - 3) { // - 4
+            if (stateList[row][col] == player &&
+                stateList[row - 1][col + 1] == player &&
+                stateList[row - 2][col + 2] == player &&
+                stateList[row - 3][col + 3] == player) {
+                return true
+            }
+        }
+    }
+    //check downward diagonal
+    for (row in 0 until stateList.size - 3) { // - 4
+        for (col in 0 until stateList[0].size - 3) { // - 4
+            if (stateList[row][col] == player &&
+                stateList[row + 1][col + 1] == player &&
+                stateList[row + 2][col + 2] == player &&
+                stateList[row + 3][col + 3] == player) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+
+fun analazeGameRows(player:String, stateList: MutableList<MutableList<Int>>) :Boolean { //: MutableList<Int>
     //println(stateList)
 //    for (colIdx in stateList.indices) {
 //    }
+
+
+
+
+//    for (colIdx in stateList[0].indices) {
+//        var tmpArr = getDiagUpColumn(colIdx+1, stateList)
+//        var tmpStr = ""
+//        for (i in tmpArr) {
+//            tmpStr += i
+//        }
+//
+//        if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
+//            println("WINNER DIAG UP YAYYYYYYY")
+//            return true
+//            //break
+//        }
+//    }
+
+    //if (inDiag())
 
 
     for (colIdx in stateList[0].indices) {
@@ -233,11 +336,10 @@ fun analazeGameRows(stateList: MutableList<MutableList<Int>>)  { //: MutableList
             tmpStr += i
         }
 
-        //println("$colIdx --- $tmpStr")
-
         if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
             //println("WINNER COLUMN YAYYYYYYY")
-            break
+            return true
+            //break
         }
     }
 
@@ -251,7 +353,8 @@ fun analazeGameRows(stateList: MutableList<MutableList<Int>>)  { //: MutableList
 
         if (tmpStr.contains("1111") || tmpStr.contains("2222")) {
             //println("WINNER ROW YAYYYYYYY")
-            break
+            return true
+            //break
         }
        // print("ppo")
 
@@ -281,11 +384,38 @@ fun analazeGameRows(stateList: MutableList<MutableList<Int>>)  { //: MutableList
 //            }
 //        }
 //    }
+
+    return false
 }
 
 fun winnerCheck() {
 
 }
+
+fun inDiag(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
+    val tmpArr = MutableList<Int>(stateList.size) { 0 }
+
+    var xx = colNo
+
+    val rowSize = stateList.size
+    val colSize = stateList[0].size
+
+    for (k in 0..colSize + rowSize - 2) {
+        for (j in 0..k) {
+            val i = k - j
+            if (i < rowSize && j < colSize) {
+                print(stateList.get(i).get(j).toString())
+            }
+        }
+        println()
+    }
+
+    return tmpArr
+    //return mutableListOf(5,6,7,0,0)
+}
+
+
+
 
 fun getColumn(colNo: Int, stateList: MutableList<MutableList<Int>>) : MutableList<Int> {
     val tmpArr = MutableList<Int>(stateList.size) { 0 }

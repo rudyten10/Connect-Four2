@@ -1,5 +1,6 @@
 package connectfour
 
+//stage 2/5
 fun main() {
     var rows = 0
     var cols = 0
@@ -52,6 +53,31 @@ fun main() {
 
     println("$fPlayerName VS $sPlayerName")
     println("$rows X $cols board")
+    //var i = 0
+    for (i in 1..cols) {
+        print(" $i")
+    }
+    //println()
+    for (i in 1..rows) {
+        println()
+        for (i in 1..cols+1) {
+            print("║ ")
+        }
+    }
+    println()
+    for (i in 1..cols*2) {
+        if (i == 1)
+            print("╚")
+
+        if (i == cols*2)
+            print("╝ ")
+        else {
+            if (i % 2 == 0)
+                print("╩")
+            else
+                print("═")
+        }
+    }
 
 
 
